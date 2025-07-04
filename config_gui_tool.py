@@ -1,0 +1,127 @@
+import tkinter as tk
+from tkinter import messagebox, ttk
+import json
+import os
+
+CONFIG_FILE = "config.json"
+WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+class ConfigGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("EnumGuardian 設定工具")
+        self.config = self.load_config()
+        self.build_widgets()
+
+    def load_config(self):
+        if not os.path.exists(CONFIG_FILE):
+            return {
+                "threshold": 200,
+                "log_file": "enum_guardian_log.txt",
+                "scan_strategy": {"mode": "scheduled", "time": "12:30", "days": [], "enabled": True},
+                "monitored_devices": []
+            }
+        with open(CONFIG_FILE, 'r') as f:
+            return json.load(f)
+
+    def save_config(self):
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(self.config, f, indent=4)
+        messagebox.showinfo("完成", "設定已儲存！")
+
+    def build_widgets(self):
+        row = 0
+        tk.Label(self.root, text="全域 ENUM 門檻").grid(row=row, column=0, sticky='e')
+        self.threshold_var = tk.StringVar(value=str(self.config.get("threshold", 200)))
+        tk.Entry(self.root, textvariable=self.threshold_var).grid(row=row, column=1, sticky='w')
+
+        row += 1
+        tk.Label(self.root, text="Log 檔案名稱").grid(row=row, column=0, sticky='e')
+        self.log_file_var = tk.StringVar(value=self.config.get("log_file", "enum_guardian_log.txt"))
+        tk.Entry(self.root, textvariable=self.log_file_var).grid(row=row, column=1, sticky='w')
+
+        row += 1
+        tk.Label(self.root, text="執行時間 (HH:MM)").grid(row=row, column=0, sticky='e')
+        self.time_var = tk.StringVar(value=self.config.get("scan_strategy", {}).get("time", "12:30"))
+        tk.Entry(self.root, textvariable=self.time_var).grid(row=row, column=1, sticky='w')
+
+        row += 1
+        self.enabled_var = tk.BooleanVar(value=self.config.get("scan_strategy", {}).get("enabled", True))
+        tk.Checkbutton(self.root, text="啟用排程", variable=self.enabled_var).grid(row=row, column=1, sticky='w')
+
+        row += 1
+        tk.Label(self.root, text="週期選擇").grid(row=row, column=0, sticky='ne')
+        self.day_vars = {}
+        frame = tk.Frame(self.root)
+        frame.grid(row=row, column=1, sticky='w')
+        for day in WEEKDAYS:
+            var = tk.BooleanVar(value=day in self.config.get("scan_strategy", {}).get("days", []))
+            cb = tk.Checkbutton(frame, text=day, variable=var)
+            cb.pack(side="left")
+            self.day_vars[day] = var
+
+        row += 1
+        tk.Label(self.root, text="監控 VID:PID").grid(row=row, column=0, sticky='ne')
+        self.vid_listbox = tk.Listbox(self.root, height=5, width=30, selectmode=tk.MULTIPLE)
+        self.refresh_vid_list()
+        self.vid_listbox.grid(row=row, column=1, sticky='w')
+
+        row += 1
+        self.new_vid_var = tk.StringVar()
+        self.notify_threshold_var = tk.StringVar(value="50")
+        frame_add = tk.Frame(self.root)
+        frame_add.grid(row=row, column=1, sticky='w')
+        tk.Label(frame_add, text="新增").pack(side='left')
+        tk.Entry(frame_add, textvariable=self.new_vid_var, width=10).pack(side='left')
+        tk.Label(frame_add, text="閾值").pack(side='left')
+        tk.Entry(frame_add, textvariable=self.notify_threshold_var, width=5).pack(side='left')
+        tk.Button(frame_add, text="新增裝置", command=self.add_vid).pack(side='left')
+
+        row += 1
+        tk.Button(self.root, text="刪除選取", command=self.remove_selected).grid(row=row, column=0)
+        tk.Button(self.root, text="儲存設定", command=self.save).grid(row=row, column=1)
+
+    def refresh_vid_list(self):
+        self.vid_listbox.delete(0, tk.END)
+        for item in self.config.get("monitored_devices", []):
+            self.vid_listbox.insert(tk.END, item["vid_pid"])
+
+    def add_vid(self):
+        vid = self.new_vid_var.get().strip().upper()
+        try:
+            threshold = int(self.notify_threshold_var.get())
+        except ValueError:
+            messagebox.showerror("錯誤", "請輸入有效的閾值數字")
+            return
+        if vid and all(d["vid_pid"].upper() != vid for d in self.config["monitored_devices"]):
+            self.config["monitored_devices"].append({"vid_pid": vid, "notify_threshold": threshold})
+            self.refresh_vid_list()
+        else:
+            messagebox.showwarning("警告", "裝置已存在或格式錯誤")
+
+    def remove_selected(self):
+        selected = [self.vid_listbox.get(i).upper() for i in self.vid_listbox.curselection()]
+        self.config["monitored_devices"] = [
+            d for d in self.config["monitored_devices"]
+            if d["vid_pid"].upper() not in selected
+        ]
+        self.refresh_vid_list()
+
+    def save(self):
+        self.config["threshold"] = int(self.threshold_var.get())
+        self.config["log_file"] = self.log_file_var.get()
+        self.config["scan_strategy"] = {
+            "enabled": self.enabled_var.get(),
+            "time": self.time_var.get(),
+            "days": [day for day, var in self.day_vars.items() if var.get()],
+            "mode": "scheduled"
+        }
+        self.save_config()
+
+    def run(self):
+        self.root.mainloop()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    gui = ConfigGUI(root)
+    gui.run()
