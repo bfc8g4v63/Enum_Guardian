@@ -3,10 +3,8 @@ import subprocess
 import json
 import os
 
+from utils import normalize_vidpid
 LOCK_LIST_FILE = "lock_list.json"
-
-def normalize_vidpid(vidpid: str) -> str:
-    return vidpid.replace(":", "").replace("_", "").upper()
 
 def update_lock_list(lock_list_file: str, vidpid: str) -> bool:
     try:
@@ -49,12 +47,15 @@ def clean_enum_for_vidpid(vidpid: str):
             while True:
                 try:
                     subkey_name = winreg.EnumKey(root, i)
-                    compare_key = subkey_name.upper().replace("VID_", "").replace("PID_", "")
+                    compare_key = normalize_vidpid(subkey_name)
                     if compare_key == vidpid:
                         to_delete.append(subkey_name)
                     i += 1
                 except OSError:
                     break
+
+            if not to_delete:
+                print(f"[Cleaner] 找不到匹配 {vidpid} 的 VID/PID 項目，無項目可刪")
 
             for key in to_delete:
                 subprocess.run(f'reg delete "HKLM\\{base_key}\\{key}" /f', shell=True)

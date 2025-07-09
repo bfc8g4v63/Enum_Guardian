@@ -39,4 +39,7 @@ def is_time_to_run(scan_strategy):
 
 
 def should_execute_now(scan_strategy):
-    return should_run_today(scan_strategy) and is_time_to_run(scan_strategy)
+    today_check = should_run_today(scan_strategy)
+    time_check = is_time_to_run(scan_strategy)
+    print(f"[Scheduler] Date Check: {today_check}, Time Check: {time_check}")
+    return today_check and time_check

@@ -1,12 +1,19 @@
 {
-    "threshold": 200,
+    "threshold": 100,
     "log_file": "enum_guardian_log.txt",
     "scan_strategy": {
-        "enabled": true,
-        "time": "00:10",
-        "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-        "mode": "scheduled"
-    },
+    "enabled": true,
+    "time": "14:18",
+    "days": [
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat"
+    ],
+    "mode": "scheduled"
+},
     "monitored_devices": [
         {"vid_pid": "VID045E&PID062A", "notify_threshold": 50},
         {"vid_pid": "VID05C6&PID90B8", "notify_threshold": 50},

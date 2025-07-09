@@ -1,7 +1,10 @@
 import tkinter as tk
-from tkinter import messagebox, ttk
 import json
 import os
+
+from utils import normalize_vidpid
+from tkinter import messagebox, ttk
+
 
 CONFIG_FILE = "config.json"
 WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -16,7 +19,7 @@ class ConfigGUI:
     def load_config(self):
         if not os.path.exists(CONFIG_FILE):
             return {
-                "threshold": 200,
+                "threshold": 100,
                 "log_file": "enum_guardian_log.txt",
                 "scan_strategy": {"mode": "scheduled", "time": "12:30", "days": [], "enabled": True},
                 "monitored_devices": []
@@ -25,14 +28,24 @@ class ConfigGUI:
             return json.load(f)
 
     def save_config(self):
-        with open(CONFIG_FILE, 'w') as f:
-            json.dump(self.config, f, indent=4)
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            f.write('{\n')
+            f.write('    "threshold": %d,\n' % self.config["threshold"])
+            f.write('    "log_file": %s,\n' % json.dumps(self.config["log_file"]))
+            f.write('    "scan_strategy": %s,\n' % json.dumps(self.config["scan_strategy"], indent=4))
+            f.write('    "monitored_devices": [\n')
+            devices = self.config.get("monitored_devices", [])
+            device_lines = [f'        {json.dumps(device)}' for device in devices]
+            f.write(',\n'.join(device_lines))
+            f.write('\n    ]\n')
+            f.write('}\n')
+
         messagebox.showinfo("完成", "設定已儲存！")
 
     def build_widgets(self):
         row = 0
         tk.Label(self.root, text="全域 ENUM 門檻").grid(row=row, column=0, sticky='e')
-        self.threshold_var = tk.StringVar(value=str(self.config.get("threshold", 200)))
+        self.threshold_var = tk.StringVar(value=str(self.config.get("threshold", 100)))
         tk.Entry(self.root, textvariable=self.threshold_var).grid(row=row, column=1, sticky='w')
 
         row += 1
@@ -84,27 +97,28 @@ class ConfigGUI:
     def refresh_vid_list(self):
         self.vid_listbox.delete(0, tk.END)
         for item in self.config.get("monitored_devices", []):
-            self.vid_listbox.insert(tk.END, item["vid_pid"])
+            self.vid_listbox.insert(tk.END, normalize_vidpid(item["vid_pid"]))
 
     def add_vid(self):
-        vid = self.new_vid_var.get().strip().upper()
+        vid = normalize_vidpid(self.new_vid_var.get())
         try:
             threshold = int(self.notify_threshold_var.get())
         except ValueError:
             messagebox.showerror("錯誤", "請輸入有效的閾值數字")
             return
-        if vid and all(d["vid_pid"].upper() != vid for d in self.config["monitored_devices"]):
+        if vid and all(normalize_vidpid(d["vid_pid"]) != vid for d in self.config["monitored_devices"]):
             self.config["monitored_devices"].append({"vid_pid": vid, "notify_threshold": threshold})
             self.refresh_vid_list()
         else:
             messagebox.showwarning("警告", "裝置已存在或格式錯誤")
 
     def remove_selected(self):
-        selected = [self.vid_listbox.get(i).upper() for i in self.vid_listbox.curselection()]
+        selected = [normalize_vidpid(self.vid_listbox.get(i)) for i in self.vid_listbox.curselection()]
         self.config["monitored_devices"] = [
             d for d in self.config["monitored_devices"]
-            if d["vid_pid"].upper() not in selected
+            if normalize_vidpid(d["vid_pid"]) not in selected
         ]
+
         self.refresh_vid_list()
 
     def save(self):

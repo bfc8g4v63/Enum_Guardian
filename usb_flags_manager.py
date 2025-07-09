@@ -1,12 +1,11 @@
 import winreg
 import ctypes
 
-def normalize_vidpid(vidpid: str) -> str:
-    return vidpid.replace(":", "").replace("_", "").upper()
+from utils import normalize_vidpid
 
 def format_ignore_key(vidpid: str) -> str:
     vidpid = normalize_vidpid(vidpid)
-    return f"IgnoreHWSerNum{vidpid.upper()}"
+    return f"IgnoreHWSerNum{vidpid}"
 
 def prompt_user_add_ignore_key(formatted_key: str) -> bool:
     msg = f"是否將 {formatted_key} 加入 UsbFlags 中，以防止後續裝置增胖？"
