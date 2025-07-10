@@ -14,7 +14,12 @@ def scan_enum_count(target_vidpid):
                 if norm_sub == norm_target:
                     try:
                         with winreg.OpenKey(usb_root, subkey_name) as device_key:
-                            count += winreg.QueryInfoKey(device_key)[0] 
+                            for j in range(winreg.QueryInfoKey(device_key)[0]):
+                                try:
+                                    _ = winreg.EnumKey(device_key, j)
+                                    count += 1
+                                except OSError:
+                                    continue
                     except Exception as e:
                         print(f"[Monitor] Failed to open subkey {subkey_name}: {e}")
     except Exception as e:
@@ -31,7 +36,13 @@ def scan_all_vidpid_counts():
                     subkey_name = winreg.EnumKey(usb_root, i)
                     norm = normalize_vidpid(subkey_name)
                     with winreg.OpenKey(usb_root, subkey_name) as device_key:
-                        instance_count = winreg.QueryInfoKey(device_key)[0]
+                        instance_count = 0
+                        for j in range(winreg.QueryInfoKey(device_key)[0]):
+                            try:
+                                _ = winreg.EnumKey(device_key, j)
+                                instance_count += 1
+                            except OSError:
+                                continue
                         counts[norm] = instance_count
                 except FileNotFoundError:
                     continue

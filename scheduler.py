@@ -20,23 +20,27 @@ def should_run_today(scan_strategy):
         return False
     if mode == "daily":
         return True
-    if mode == "weekly":
+
+    if mode in ("weekly", "scheduled"):
         weekdays = scan_strategy.get("days", [])
         today = datetime.datetime.today().weekday()
-        return any(WEEKDAYS_MAP.get(day, -1) == today for day in weekdays)
-    if mode == "scheduled":
-        weekdays = scan_strategy.get("days", [])
-        today = datetime.datetime.today().weekday()
-        return any(WEEKDAYS_MAP.get(day, -1) == today for day in weekdays)
+        weekday_indexes = [WEEKDAYS_MAP.get(day, -1) for day in weekdays]
+        return today in weekday_indexes
+
     return False
 
 def is_time_to_run(scan_strategy):
     now = datetime.datetime.now()
-    target_time = datetime.datetime.strptime(scan_strategy.get("time", "00:00"), "%H:%M")
+    target_time_str = scan_strategy.get("time", "00:00")
+
+    try:
+        target_time = datetime.datetime.strptime(target_time_str, "%H:%M")
+    except ValueError:
+        print(f"[Scheduler] 時間格式錯誤（應為 HH:MM）: {target_time_str}")
+        return False
 
     diff = abs((now - now.replace(hour=target_time.hour, minute=target_time.minute, second=0, microsecond=0)).total_seconds())
     return diff <= 300
-
 
 def should_execute_now(scan_strategy):
     today_check = should_run_today(scan_strategy)

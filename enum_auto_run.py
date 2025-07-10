@@ -90,6 +90,11 @@ def main():
             logging.error(f"[AUTO] [{idx}] 清理 {vidpid} 發生錯誤：{e}")
             failed.append({"vid_pid": vidpid, "count": count, "error": str(e)})
 
+    monitored_dict = {
+    normalize_vidpid(d["vid_pid"]): d.get("notify_threshold", 50)
+    for d in config.get("monitored_devices", [])
+    }
+
     logging.info("[AUTO] 第二次掃描確認中...")
     counts_2 = scan_all_vidpid_counts()
     sorted_counts_2 = sorted(counts_2.items(), key=lambda x: x[1], reverse=True)
@@ -141,4 +146,5 @@ if __name__ == "__main__":
         logging.error(f"未捕捉的錯誤：{e}")
         with open("fatal_error.log", "w", encoding="utf-8") as f:
             f.write(traceback.format_exc())
+        logging.error(traceback.format_exc())
         print("發生重大錯誤，請查看 fatal_error.log")

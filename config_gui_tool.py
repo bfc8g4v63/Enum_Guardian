@@ -29,17 +29,7 @@ class ConfigGUI:
 
     def save_config(self):
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
-            f.write('{\n')
-            f.write('    "threshold": %d,\n' % self.config["threshold"])
-            f.write('    "log_file": %s,\n' % json.dumps(self.config["log_file"]))
-            f.write('    "scan_strategy": %s,\n' % json.dumps(self.config["scan_strategy"], indent=4))
-            f.write('    "monitored_devices": [\n')
-            devices = self.config.get("monitored_devices", [])
-            device_lines = [f'        {json.dumps(device)}' for device in devices]
-            f.write(',\n'.join(device_lines))
-            f.write('\n    ]\n')
-            f.write('}\n')
-
+            json.dump(self.config, f, indent=4, ensure_ascii=False)
         messagebox.showinfo("完成", "設定已儲存！")
 
     def build_widgets(self):
@@ -97,18 +87,26 @@ class ConfigGUI:
     def refresh_vid_list(self):
         self.vid_listbox.delete(0, tk.END)
         for item in self.config.get("monitored_devices", []):
-            self.vid_listbox.insert(tk.END, normalize_vidpid(item["vid_pid"]))
+            line = f'{normalize_vidpid(item["vid_pid"])} (閾值: {item.get("notify_threshold", "?")})'
+            self.vid_listbox.insert(tk.END, line)
 
-    def add_vid(self):
+    def add_vid(self): 
         vid = normalize_vidpid(self.new_vid_var.get())
+
+        if not vid or len(vid) < 4:
+            messagebox.showerror("錯誤", "請輸入合法的 VID:PID")
+            return
+
         try:
             threshold = int(self.notify_threshold_var.get())
         except ValueError:
             messagebox.showerror("錯誤", "請輸入有效的閾值數字")
             return
-        if vid and all(normalize_vidpid(d["vid_pid"]) != vid for d in self.config["monitored_devices"]):
+
+        if all(normalize_vidpid(d["vid_pid"]) != vid for d in self.config["monitored_devices"]):
             self.config["monitored_devices"].append({"vid_pid": vid, "notify_threshold": threshold})
             self.refresh_vid_list()
+            self.notify_threshold_var.set("50")
         else:
             messagebox.showwarning("警告", "裝置已存在或格式錯誤")
 

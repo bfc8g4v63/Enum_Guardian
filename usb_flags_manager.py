@@ -22,7 +22,14 @@ def add_ignore_key_to_registry(vidpid: str, auto=True) -> bool:
     try:
         key_path = r"SYSTEM\\CurrentControlSet\\Control\\UsbFlags"
         with winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, key_path) as usb_flags:
+            try:
+                winreg.QueryValueEx(usb_flags, formatted_key)
+                print(f"[UsbFlags] 已存在: {formatted_key}，略過設定")
+                return True
+            except FileNotFoundError:
+                pass
             winreg.SetValueEx(usb_flags, formatted_key, 0, winreg.REG_BINARY, b'\x01')
+
         print(f"[UsbFlags] 已新增: {formatted_key}")
         return True
     except PermissionError:
