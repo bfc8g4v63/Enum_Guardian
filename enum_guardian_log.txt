@@ -255,3 +255,69 @@
 [2025-07-10 14:18:03,198] [AUTO] 第二次掃描無需清理。
 [2025-07-10 14:18:03,199] [AUTO] 今日COMDB清理完成
 [2025-07-10 14:18:03,200] [AUTO] ====== 全部流程執行完畢 ======
+[2025-07-11 14:18:04,002] [AUTO] ====== EnumGuardian Auto Scan & Cleanup Started ======
+[2025-07-11 14:18:04,004] [AUTO] 初次掃描結果（依數量排序）:
+[2025-07-11 14:18:04,004]     [1] 0CA6A050 Count: 5
+[2025-07-11 14:18:04,004]     [2] 0CA6A050MI00 Count: 5
+[2025-07-11 14:18:04,004]     [3] 1778D002 Count: 4
+[2025-07-11 14:18:04,004]     [4] 1778D002MI00 Count: 4
+[2025-07-11 14:18:04,004]     [5] 1778D002MI02 Count: 4
+[2025-07-11 14:18:04,004]     [6] ROOTHUB30 Count: 2
+[2025-07-11 14:18:04,005]     [7] 090C1000 Count: 2
+[2025-07-11 14:18:04,005]     [8] 85641000 Count: 2
+[2025-07-11 14:18:04,005]     [9] 00000002 Count: 1
+[2025-07-11 14:18:04,005]     [10] 046DC548 Count: 1
+[2025-07-11 14:18:04,005]     [11] 046DC548MI00 Count: 1
+[2025-07-11 14:18:04,005]     [12] 046DC548MI01 Count: 1
+[2025-07-11 14:18:04,005]     [13] 046DC548MI02 Count: 1
+[2025-07-11 14:18:04,005]     [14] 046DC548MI03 Count: 1
+[2025-07-11 14:18:04,005]     [15] 04F30C9D Count: 1
+[2025-07-11 14:18:04,005]     [16] 05AC12A8 Count: 1
+[2025-07-11 14:18:04,005]     [17] 05AC12A8MI00 Count: 1
+[2025-07-11 14:18:04,005]     [18] 05AC12A8MI01 Count: 1
+[2025-07-11 14:18:04,005]     [19] 05AC12A8MI02 Count: 1
+[2025-07-11 14:18:04,005]     [20] 05E30608 Count: 1
+[2025-07-11 14:18:04,005]     [21] 05E30610 Count: 1
+[2025-07-11 14:18:04,005]     [22] 05E30612 Count: 1
+[2025-07-11 14:18:04,005]     [23] 0B0565F1 Count: 1
+[2025-07-11 14:18:04,005]     [24] 0BDA8153 Count: 1
+[2025-07-11 14:18:04,005]     [25] 10C4EA60 Count: 1
+[2025-07-11 14:18:04,005]     [26] 322E233A Count: 1
+[2025-07-11 14:18:04,005]     [27] 322E233AMI00 Count: 1
+[2025-07-11 14:18:04,005]     [28] 322E233AMI02 Count: 1
+[2025-07-11 14:18:04,005]     [29] 322E233AMI04 Count: 1
+[2025-07-11 14:18:04,005]     [30] 80870033 Count: 1
+[2025-07-11 14:18:04,005] [AUTO] [1] 清理 0CA6A050 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [2] 清理 0CA6A050MI00 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [3] 清理 1778D002 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [4] 清理 1778D002MI00 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [5] 清理 1778D002MI02 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [6] 清理 ROOTHUB30 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [7] 清理 090C1000 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [8] 清理 85641000 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [9] 清理 00000002 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [10] 清理 046DC548 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [11] 清理 046DC548MI00 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [12] 清理 046DC548MI01 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [13] 清理 046DC548MI02 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [14] 清理 046DC548MI03 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [15] 清理 04F30C9D 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [16] 清理 05AC12A8 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [17] 清理 05AC12A8MI00 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [18] 清理 05AC12A8MI01 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [19] 清理 05AC12A8MI02 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [20] 清理 05E30608 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [21] 清理 05E30610 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [22] 清理 05E30612 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [23] 清理 0B0565F1 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [24] 清理 0BDA8153 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [25] 清理 10C4EA60 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [26] 清理 322E233A 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [27] 清理 322E233AMI00 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [28] 清理 322E233AMI02 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [29] 清理 322E233AMI04 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] [30] 清理 80870033 發生錯誤：cannot access local variable 'monitored_dict' where it is not associated with a value
+[2025-07-11 14:18:04,005] [AUTO] 第二次掃描確認中...
+[2025-07-11 14:18:04,006] [AUTO] 第二次掃描無需清理。
+[2025-07-11 14:18:04,007] [AUTO] 今日COMDB清理完成
+[2025-07-11 14:18:04,008] [AUTO] ====== 全部流程執行完畢 ======

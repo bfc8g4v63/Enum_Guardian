@@ -5,7 +5,6 @@ import os
 from utils import normalize_vidpid
 from tkinter import messagebox, ttk
 
-
 CONFIG_FILE = "config.json"
 WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -90,7 +89,7 @@ class ConfigGUI:
             line = f'{normalize_vidpid(item["vid_pid"])} (閾值: {item.get("notify_threshold", "?")})'
             self.vid_listbox.insert(tk.END, line)
 
-    def add_vid(self): 
+    def add_vid(self):
         vid = normalize_vidpid(self.new_vid_var.get())
 
         if not vid or len(vid) < 4:
@@ -107,6 +106,7 @@ class ConfigGUI:
             self.config["monitored_devices"].append({"vid_pid": vid, "notify_threshold": threshold})
             self.refresh_vid_list()
             self.notify_threshold_var.set("50")
+            self.save_config()
         else:
             messagebox.showwarning("警告", "裝置已存在或格式錯誤")
 
@@ -116,8 +116,8 @@ class ConfigGUI:
             d for d in self.config["monitored_devices"]
             if normalize_vidpid(d["vid_pid"]) not in selected
         ]
-
         self.refresh_vid_list()
+        self.save_config()
 
     def save(self):
         self.config["threshold"] = int(self.threshold_var.get())

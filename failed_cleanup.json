@@ -1,1 +1,152 @@
-[]
+[
+    {
+        "vid_pid": "0CA6A050",
+        "count": 5,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "0CA6A050MI00",
+        "count": 5,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "1778D002",
+        "count": 4,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "1778D002MI00",
+        "count": 4,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "1778D002MI02",
+        "count": 4,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "ROOTHUB30",
+        "count": 2,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "090C1000",
+        "count": 2,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "85641000",
+        "count": 2,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "00000002",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "046DC548",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "046DC548MI00",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "046DC548MI01",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "046DC548MI02",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "046DC548MI03",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "04F30C9D",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "05AC12A8",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "05AC12A8MI00",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "05AC12A8MI01",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "05AC12A8MI02",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "05E30608",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "05E30610",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "05E30612",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "0B0565F1",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "0BDA8153",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "10C4EA60",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "322E233A",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "322E233AMI00",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "322E233AMI02",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "322E233AMI04",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    },
+    {
+        "vid_pid": "80870033",
+        "count": 1,
+        "error": "cannot access local variable 'monitored_dict' where it is not associated with a value"
+    }
+]

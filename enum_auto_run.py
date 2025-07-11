@@ -2,9 +2,10 @@ import json
 import logging
 import os
 import sys
+
 from datetime import datetime
 from utils import normalize_vidpid
-from monitor import scan_all_vidpid_counts
+from monitor import scan_all_vidpid_counts, get_instance_count
 from cleaner import clean_enum_for_vidpid, clean_comdb
 from usb_flags_manager import add_ignore_key_to_registry
 from scheduler import should_execute_now
@@ -22,15 +23,22 @@ with open(CONFIG_FILE, 'r') as f:
     config = json.load(f)
 
 LOG_FILE = config.get("log_file", "enum_guardian_log.txt")
+
+if os.path.exists(LOG_FILE):
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write("\n")
+
 logging.basicConfig(
     filename=LOG_FILE,
     level=logging.INFO,
-    format='[%(asctime)s] %(message)s'
+    format='[%(asctime)s] %(message)s',
+    handlers=[
+        logging.FileHandler(LOG_FILE, encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
+    ]
 )
 
 AUTO_THRESHOLD = config.get("threshold", 100)
-monitored_devices = config.get("monitored_devices", [])
-monitored_dict = {normalize_vidpid(d["vid_pid"]): d.get("notify_threshold", 50) for d in monitored_devices}
 
 def should_clean_comdb_today():
     today = datetime.now().strftime("%Y-%m-%d")
@@ -54,7 +62,13 @@ def main():
         return
 
     failed = []
-    counts = scan_all_vidpid_counts()
+
+    try:
+        counts = scan_all_vidpid_counts()
+    except Exception as e:
+        logging.error(f"[AUTO] 裝置掃描失敗：{e}")
+        return
+
     sorted_counts = sorted(counts.items(), key=lambda x: x[1], reverse=True)
 
     logging.info("[AUTO] 初次掃描結果（依數量排序）:")
@@ -64,6 +78,11 @@ def main():
     for idx, (vidpid_raw, count) in enumerate(sorted_counts, start=1):
         vidpid = normalize_vidpid(vidpid_raw)
 
+        monitored_dict = {
+            normalize_vidpid(d["vid_pid"]): d.get("notify_threshold", 50)
+            for d in config.get("monitored_devices", [])
+        }
+
         try:
             if vidpid in monitored_dict:
                 threshold = monitored_dict[vidpid]
@@ -71,34 +90,38 @@ def main():
                     logging.info(f"[AUTO] [{idx}] {vidpid} 超過門檻 ({count}>{threshold}) 開始處理")
                     add_ignore_key_to_registry(vidpid, auto=True)
                     clean_enum_for_vidpid(vidpid)
-                elif count >= AUTO_THRESHOLD:
-                    logging.info(f"[AUTO] [{idx}] {vidpid} 未監控但超過全域門檻 ({count}>={AUTO_THRESHOLD})，檢查是否已存在清單")
+            elif count >= AUTO_THRESHOLD:
+                logging.info(f"[AUTO] [{idx}] {vidpid} 未監控但超過全域門檻 ({count}>={AUTO_THRESHOLD})，檢查是否已存在清單")
+                already_monitored = any(normalize_vidpid(d["vid_pid"]) == vidpid for d in config["monitored_devices"])
+                if not already_monitored:
+                    config["monitored_devices"].append({"vid_pid": vidpid, "notify_threshold": 50})
+                    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                        json.dump(config, f, indent=4, ensure_ascii=False)
+                    logging.info(f"[AUTO] [{idx}] 已新增 {vidpid} 到監控清單")
+                else:
+                    logging.info(f"[AUTO] [{idx}] {vidpid} 已在監控清單中，跳過新增")
 
-                    already_monitored = any(normalize_vidpid(d["vid_pid"]) == vidpid for d in config["monitored_devices"])
-                    if not already_monitored:
-                        config["monitored_devices"].append({"vid_pid": vidpid, "notify_threshold": 50})
-                        with open(CONFIG_FILE, 'w') as f:
-                            json.dump(config, f, indent=4)
-                        logging.info(f"[AUTO] [{idx}] 已新增 {vidpid} 到監控清單")
-                    else:
-                        logging.info(f"[AUTO] [{idx}] {vidpid} 已在監控清單中，跳過新增")
-
-                    add_ignore_key_to_registry(vidpid, auto=True)
-                    clean_enum_for_vidpid(vidpid)
+                add_ignore_key_to_registry(vidpid, auto=True)
+                clean_enum_for_vidpid(vidpid)
 
         except Exception as e:
             logging.error(f"[AUTO] [{idx}] 清理 {vidpid} 發生錯誤：{e}")
             failed.append({"vid_pid": vidpid, "count": count, "error": str(e)})
 
-    monitored_dict = {
-    normalize_vidpid(d["vid_pid"]): d.get("notify_threshold", 50)
-    for d in config.get("monitored_devices", [])
-    }
-
     logging.info("[AUTO] 第二次掃描確認中...")
-    counts_2 = scan_all_vidpid_counts()
+    try:
+        counts_2 = scan_all_vidpid_counts()
+    except Exception as e:
+        logging.error(f"[AUTO] 第二次掃描失敗：{e}")
+        return
+
     sorted_counts_2 = sorted(counts_2.items(), key=lambda x: x[1], reverse=True)
     has_second_clean = False
+
+    monitored_dict = {
+        normalize_vidpid(d["vid_pid"]): d.get("notify_threshold", 50)
+        for d in config.get("monitored_devices", [])
+    }
 
     for idx, (vidpid_raw, count) in enumerate(sorted_counts_2, start=1):
         vidpid = normalize_vidpid(vidpid_raw)
@@ -112,8 +135,8 @@ def main():
             elif vidpid not in monitored_dict and count >= AUTO_THRESHOLD:
                 logging.info(f"[AUTO] 第二次清理新裝置 {vidpid} Count: {count}")
                 config["monitored_devices"].append({"vid_pid": vidpid, "notify_threshold": 50})
-                with open(CONFIG_FILE, 'w') as f:
-                    json.dump(config, f, indent=4)
+                with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                    json.dump(config, f, indent=4, ensure_ascii=False)
                 add_ignore_key_to_registry(vidpid, auto=True)
                 clean_enum_for_vidpid(vidpid)
                 has_second_clean = True
@@ -132,11 +155,10 @@ def main():
         except Exception as e:
             logging.error(f"[AUTO] COMDB清理失敗：{e}")
 
-    with open(FAILED_FILE, 'w') as f:
-        json.dump(failed, f, indent=4)
+    with open(FAILED_FILE, 'w', encoding='utf-8') as f:
+        json.dump(failed, f, indent=4, ensure_ascii=False)
 
     logging.info("[AUTO] ====== 全部流程執行完畢 ======")
-
 
 if __name__ == "__main__":
     try:

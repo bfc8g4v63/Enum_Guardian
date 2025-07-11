@@ -1,5 +1,6 @@
 import datetime
 import time
+import logging
 
 WEEKDAYS_MAP = {
     "Mon": 0,
@@ -11,7 +12,12 @@ WEEKDAYS_MAP = {
     "Sun": 6
 }
 
+if not logging.getLogger().hasHandlers():
+    logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(message)s')
+
 def should_run_today(scan_strategy):
+    logging.debug(f"[Scheduler] 執行週期策略檢查: {scan_strategy}")
+
     if not scan_strategy.get("enabled", False):
         return False
 
@@ -36,14 +42,21 @@ def is_time_to_run(scan_strategy):
     try:
         target_time = datetime.datetime.strptime(target_time_str, "%H:%M")
     except ValueError:
-        print(f"[Scheduler] 時間格式錯誤（應為 HH:MM）: {target_time_str}")
+        logging.warning(f"[Scheduler] 時間格式錯誤（應為 HH:MM）: {target_time_str}")
         return False
 
-    diff = abs((now - now.replace(hour=target_time.hour, minute=target_time.minute, second=0, microsecond=0)).total_seconds())
-    return diff <= 300
+    scheduled_time = now.replace(hour=target_time.hour, minute=target_time.minute, second=0, microsecond=0)
+    delta = abs((now - scheduled_time).total_seconds())
+
+    if delta <= 300:
+        logging.debug(f"[Scheduler] 現在時間 {now.strftime('%H:%M:%S')} 接近排程時間 {target_time_str}")
+        return True
+    else:
+        logging.debug(f"[Scheduler] 距排程時間超過 5 分鐘，略過執行")
+        return False
 
 def should_execute_now(scan_strategy):
     today_check = should_run_today(scan_strategy)
     time_check = is_time_to_run(scan_strategy)
-    print(f"[Scheduler] Date Check: {today_check}, Time Check: {time_check}")
+    logging.info(f"[Scheduler] Date Check: {today_check}, Time Check: {time_check}")
     return today_check and time_check
