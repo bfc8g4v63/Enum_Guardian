@@ -14,6 +14,7 @@ class ConfigGUI:
         self.root.title("EnumGuardian 設定工具")
         self.config = self.load_config()
         self.build_widgets()
+        
 
     def load_config(self):
         if not os.path.exists(CONFIG_FILE):
@@ -26,7 +27,7 @@ class ConfigGUI:
         with open(CONFIG_FILE, 'r') as f:
             return json.load(f)
 
-    def save_config(self):
+    def save_config(self): 
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump(self.config, f, indent=4, ensure_ascii=False)
         messagebox.showinfo("完成", "設定已儲存！")
