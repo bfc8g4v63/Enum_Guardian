@@ -20,6 +20,7 @@ def add_ignore_key_to_registry(vidpid: str, auto=True) -> bool:
     if not auto:
         if not prompt_user_add_ignore_key(formatted_key):
             return False
+
     try:
         key_path = r"SYSTEM\\CurrentControlSet\\Control\\UsbFlags"
         with winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, key_path) as usb_flags:
@@ -38,11 +39,13 @@ def add_ignore_key_to_registry(vidpid: str, auto=True) -> bool:
     except PermissionError:
         logging.warning("[UsbFlags] 權限不足，請以系統管理員身分執行")
     except Exception as e:
-        logging.error(f"[UsbFlags] 設定失敗: {e}")
+        logging.error(f"[UsbFlags] 設定失敗: {e}，vidpid={vidpid}")
 
     logging.debug(f"[UsbFlags] 設定 {formatted_key} 失敗")
     return False
 
 if __name__ == "__main__":
+    if not logging.getLogger().hasHandlers():
+        logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] %(message)s')
     test_vidpid = "05A690B8"
-    add_ignore_key_to_registry(test_vidpid)
+    add_ignore_key_to_registry(test_vidpid, auto=False)

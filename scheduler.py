@@ -12,9 +12,6 @@ WEEKDAYS_MAP = {
     "Sun": 6
 }
 
-if not logging.getLogger().hasHandlers():
-    logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(message)s')
-
 def should_run_today(scan_strategy):
     logging.debug(f"[Scheduler] 執行週期策略檢查: {scan_strategy}")
 
@@ -59,4 +56,12 @@ def should_execute_now(scan_strategy):
     today_check = should_run_today(scan_strategy)
     time_check = is_time_to_run(scan_strategy)
     logging.info(f"[Scheduler] Date Check: {today_check}, Time Check: {time_check}")
+
+    if not today_check:
+        logging.info("[Scheduler] 今日不在排程日期，跳過執行")
+    elif not time_check:
+        logging.info("[Scheduler] 時間尚未到排程指定時間，跳過執行")
+    else:
+        logging.info("[Scheduler] 符合排程條件，執行開始")
+
     return today_check and time_check

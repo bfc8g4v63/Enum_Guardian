@@ -1,6 +1,7 @@
 import tkinter as tk
 import json
 import os
+import logging
 
 from utils import normalize_vidpid
 from tkinter import messagebox, ttk
@@ -15,7 +16,6 @@ class ConfigGUI:
         self.config = self.load_config()
         self.build_widgets()
         
-
     def load_config(self):
         if not os.path.exists(CONFIG_FILE):
             return {
@@ -24,12 +24,23 @@ class ConfigGUI:
                 "scan_strategy": {"mode": "scheduled", "time": "12:30", "days": [], "enabled": True},
                 "monitored_devices": []
             }
-        with open(CONFIG_FILE, 'r') as f:
-            return json.load(f)
+        try:
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except json.JSONDecodeError as e:
+            logging.error(f"[ConfigGUI] config.json 解析失敗：{e}")
+            messagebox.showerror("錯誤", "config.json 格式錯誤，請修正或刪除重新建立")
+            return {
+                "threshold": 100,
+                "log_file": "enum_guardian_log.txt",
+                "scan_strategy": {"mode": "scheduled", "time": "12:30", "days": [], "enabled": True},
+                "monitored_devices": []
+            }
 
     def save_config(self): 
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump(self.config, f, indent=4, ensure_ascii=False)
+        logging.info("[ConfigGUI] 設定已儲存至 config.json")
         messagebox.showinfo("完成", "設定已儲存！")
 
     def build_widgets(self):
@@ -108,6 +119,7 @@ class ConfigGUI:
             self.refresh_vid_list()
             self.notify_threshold_var.set("50")
             self.save_config()
+            logging.info(f"[ConfigGUI] 已新增監控裝置：{vid} 閾值={threshold}")
         else:
             messagebox.showwarning("警告", "裝置已存在或格式錯誤")
 
@@ -119,6 +131,7 @@ class ConfigGUI:
         ]
         self.refresh_vid_list()
         self.save_config()
+        logging.info(f"[ConfigGUI] 刪除裝置：{selected}")
 
     def save(self):
         self.config["threshold"] = int(self.threshold_var.get())
@@ -135,6 +148,8 @@ class ConfigGUI:
         self.root.mainloop()
 
 if __name__ == "__main__":
+    if not logging.getLogger().hasHandlers():
+        logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(message)s')
     root = tk.Tk()
     gui = ConfigGUI(root)
     gui.run()

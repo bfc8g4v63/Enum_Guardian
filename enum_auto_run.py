@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import sys
-
 from datetime import datetime
 from utils import normalize_vidpid
 from monitor import scan_all_vidpid_counts, get_instance_count
@@ -24,12 +23,7 @@ with open(CONFIG_FILE, 'r') as f:
 
 LOG_FILE = config.get("log_file", "enum_guardian_log.txt")
 
-if os.path.exists(LOG_FILE):
-    with open(LOG_FILE, "a", encoding="utf-8") as f:
-        f.write("\n")
-
 logging.basicConfig(
-    filename=LOG_FILE,
     level=logging.INFO,
     format='[%(asctime)s] %(message)s',
     handlers=[
@@ -69,8 +63,8 @@ def main():
         logging.error(f"[AUTO] 裝置掃描失敗：{e}")
         return
 
+    logging.info(f"[AUTO] 本次掃描共偵測到 {len(counts)} 個裝置項目")
     sorted_counts = sorted(counts.items(), key=lambda x: x[1], reverse=True)
-
     logging.info("[AUTO] 初次掃描結果（依數量排序）:")
     for idx, (vidpid_raw, count) in enumerate(sorted_counts, start=1):
         logging.info(f"    [{idx}] {vidpid_raw} Count: {count}")
@@ -98,6 +92,7 @@ def main():
                     with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
                         json.dump(config, f, indent=4, ensure_ascii=False)
                     logging.info(f"[AUTO] [{idx}] 已新增 {vidpid} 到監控清單")
+                    logging.info(f"[AUTO] 目前監控清單總數：{len(config['monitored_devices'])}")
                 else:
                     logging.info(f"[AUTO] [{idx}] {vidpid} 已在監控清單中，跳過新增")
 
@@ -157,6 +152,11 @@ def main():
 
     with open(FAILED_FILE, 'w', encoding='utf-8') as f:
         json.dump(failed, f, indent=4, ensure_ascii=False)
+
+    if failed:
+        logging.warning(f"[AUTO] 共 {len(failed)} 項清理失敗")
+        for i, item in enumerate(failed, start=1):
+            logging.warning(f"[AUTO] [{i}] {item['vid_pid']} ({item['count']}): {item['error']}")
 
     logging.info("[AUTO] ====== 全部流程執行完畢 ======")
 

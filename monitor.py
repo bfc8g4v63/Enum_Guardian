@@ -35,6 +35,7 @@ def scan_enum_count(target_vidpid):
                     continue
     except Exception as e:
         logging.error(f"[Monitor] Error scanning registry: {e}")
+    logging.info(f"[Monitor] 完成掃描 {target_vidpid}：共 {count} 個實例")
     return count
 
 def scan_all_vidpid_counts():
@@ -49,6 +50,7 @@ def scan_all_vidpid_counts():
                     with winreg.OpenKey(usb_root, subkey_name) as device_key:
                         instance_count = get_instance_count(device_key)
                         counts[norm] = instance_count
+                        logging.debug(f"[Monitor] 掃描 {subkey_name} → {norm}: {instance_count} 個實例")
                 except FileNotFoundError:
                     continue
                 except OSError as oe:
@@ -56,4 +58,5 @@ def scan_all_vidpid_counts():
                     continue
     except Exception as e:
         logging.error(f"[Monitor] Error scanning all VID/PID: {e}")
+    logging.info(f"[Monitor] 全部 VID/PID 掃描完成，共 {len(counts)} 項")
     return counts
