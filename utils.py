@@ -11,6 +11,7 @@ def normalize_vidpid(vidpid: str) -> str:
               .replace("&", "")
               .replace(":", "")
               .replace("_", "")
+              .replace(" ", "")
               .strip()
               .upper()
     )

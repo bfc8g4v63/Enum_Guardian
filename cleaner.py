@@ -66,11 +66,36 @@ def clean_enum_for_vidpid(vidpid: str):
 
             for key in to_delete:
                 try:
-                    subprocess.run(f'reg delete "HKLM\\{base_key}\\{key}" /f', shell=True, check=True)
+                    subprocess.run(
+                        f'reg delete "HKLM\\{base_key}\\{key}" /f',
+                        shell=True,
+                        check=True,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE
+                    )
                     logging.info(f"[Cleaner] 已刪除 ENUM 註冊表項目: {key}")
                 except subprocess.CalledProcessError as e:
-                    logging.error(f"[Cleaner] 刪除 {key} 發生錯誤: {e}")
+                    logging.error(f"[Cleaner] 刪除 {key} 發生錯誤: {e.stderr.decode(errors='ignore')}")
     except PermissionError:
         logging.warning("[Cleaner] 權限不足，請使用系統管理員身分執行")
     except Exception as e:
         logging.error(f"[Cleaner] 清除 ENUM 失敗: {e}")
+
+def clean_enum_for_subkey(subkey: str):
+    base_key = r"SYSTEM\\CurrentControlSet\\Enum\\USB"
+    try:
+        full_path = f"{base_key}\\{subkey}"
+        subprocess.run(
+            f'reg delete "HKLM\\{full_path}" /f',
+            shell=True,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        logging.info(f"[Cleaner] [子鍵清理] 已刪除 ENUM 子鍵項目: {subkey}")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"[Cleaner] [子鍵清理] 刪除 {subkey} 發生錯誤: {e.stderr.decode(errors='ignore')}")
+    except PermissionError:
+        logging.warning(f"[Cleaner] [子鍵清理] 權限不足，請使用系統管理員身分執行")
+    except Exception as e:
+        logging.error(f"[Cleaner] [子鍵清理] 清除 {subkey} 失敗: {e}")

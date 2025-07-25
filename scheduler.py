@@ -27,7 +27,13 @@ def should_run_today(scan_strategy):
     if mode in ("weekly", "scheduled"):
         weekdays = scan_strategy.get("days", [])
         today = datetime.datetime.today().weekday()
-        weekday_indexes = [WEEKDAYS_MAP.get(day, -1) for day in weekdays]
+        weekday_indexes = []
+        for day in weekdays:
+            index = WEEKDAYS_MAP.get(day, -1)
+            if index == -1:
+                logging.warning(f"[Scheduler] 無效的星期縮寫: {day}")
+            else:
+                weekday_indexes.append(index)
         return today in weekday_indexes
 
     return False
@@ -39,7 +45,7 @@ def is_time_to_run(scan_strategy):
     try:
         target_time = datetime.datetime.strptime(target_time_str, "%H:%M")
     except ValueError:
-        logging.warning(f"[Scheduler] 時間格式錯誤（應為 HH:MM）: {target_time_str}")
+        logging.warning(f"[Scheduler] 時間格式錯誤（應為 HH:MM，如 08:30）：{target_time_str}")
         return False
 
     scheduled_time = now.replace(hour=target_time.hour, minute=target_time.minute, second=0, microsecond=0)

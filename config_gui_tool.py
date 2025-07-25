@@ -103,7 +103,6 @@ class ConfigGUI:
 
     def add_vid(self):
         vid = normalize_vidpid(self.new_vid_var.get())
-
         if not vid or len(vid) < 4:
             messagebox.showerror("錯誤", "請輸入合法的 VID:PID")
             return
@@ -122,8 +121,13 @@ class ConfigGUI:
             logging.info(f"[ConfigGUI] 已新增監控裝置：{vid} 閾值={threshold}")
         else:
             messagebox.showwarning("警告", "裝置已存在或格式錯誤")
+            logging.warning(f"[ConfigGUI] 嘗試加入重複裝置：{vid}")
 
     def remove_selected(self):
+        if not self.vid_listbox.curselection():
+            messagebox.showinfo("提示", "請先選取要刪除的項目")
+            return
+
         selected = [normalize_vidpid(self.vid_listbox.get(i)) for i in self.vid_listbox.curselection()]
         self.config["monitored_devices"] = [
             d for d in self.config["monitored_devices"]
