@@ -5,6 +5,7 @@ import os
 import logging
 
 from utils import normalize_vidpid
+from utils import get_locked_list
 
 LOCK_LIST_FILE = "lock_list.json"
 
@@ -14,7 +15,7 @@ def update_lock_list(lock_list_file: str, vidpid: str) -> bool:
         if not os.path.exists(lock_list_file):
             data = {"locked": []}
         else:
-            with open(lock_list_file, 'r') as f:
+            with open(lock_list_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
 
         if vidpid not in data.get("locked", []):
@@ -39,47 +40,64 @@ def clean_comdb():
     except FileNotFoundError:
         logging.warning("[Cleaner] COMDB 註冊表不存在，可能尚未建立過裝置")
     except Exception as e:
-        logging.error(f"[Cleaner] 清除 ComDB 位元失敗: {e}")
+        logging.error(f"[Cleaner] 清除 ComDB 位元失敗: {type(e).__name__} - {e}")
 
 def clean_enum_for_vidpid(vidpid: str):
     vidpid = normalize_vidpid(vidpid)
+
+    locked_list = get_locked_list(LOCK_LIST_FILE)
+    if vidpid in locked_list:
+        logging.info(f"[Cleaner] {vidpid} 已存在於 Lock List，略過清除")
+        return
+
     base_key = r"SYSTEM\\CurrentControlSet\\Enum\\USB"
+    to_delete = []
+    subkeys = []
     try:
         with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, base_key, 0, winreg.KEY_ALL_ACCESS) as root:
             i = 0
-            to_delete = []
-            subkeys = []
             while True:
                 try:
                     subkey_name = winreg.EnumKey(root, i)
                     subkeys.append(subkey_name)
                     compare_key = normalize_vidpid(subkey_name)
                     if compare_key == vidpid:
-                        to_delete.append(subkey_name)
+                        with winreg.OpenKey(root, subkey_name) as dev_key:
+                            for j in range(winreg.QueryInfoKey(dev_key)[0]):
+                                try:
+                                    child = winreg.EnumKey(dev_key, j)
+                                    to_delete.append(f"{subkey_name}\\{child}")
+                                except OSError:
+                                    continue
                     i += 1
                 except OSError:
                     break
 
-            if not to_delete:
-                logging.info(f"[Cleaner] 找不到匹配 {vidpid} 的 VID/PID 項目，無項目可刪")
-                logging.debug(f"[Cleaner] 當前可見 USB 子鍵: {subkeys}")
+        if not to_delete:
+            logging.info(f"[Cleaner] 找不到匹配 {vidpid} 的 VID/PID 項目，無項目可刪")
+            logging.debug(f"[Cleaner] 當前可見 USB 子鍵: {subkeys}")
+            return
 
-            for key in to_delete:
-                try:
-                    subprocess.run(
-                        f'reg delete "HKLM\\{base_key}\\{key}" /f',
-                        shell=True,
-                        check=True,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE
-                    )
-                    logging.info(f"[Cleaner] 已刪除 ENUM 註冊表項目: {key}")
-                except subprocess.CalledProcessError as e:
-                    logging.error(f"[Cleaner] 刪除 {key} 發生錯誤: {e.stderr.decode(errors='ignore')}")
+        for key in to_delete:
+            try:
+                subprocess.run(
+                    f'reg delete "HKLM\\{base_key}\\{key}" /f',
+                    shell=True,
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                logging.info(f"[Cleaner] 已刪除 ENUM 註冊表項目: {key}")
+            except subprocess.CalledProcessError as e:
+                logging.error(f"[Cleaner] 刪除 {key} 發生錯誤: {e.stderr}")
+        
+        update_lock_list(LOCK_LIST_FILE, vidpid)
+
     except PermissionError:
         logging.warning("[Cleaner] 權限不足，請使用系統管理員身分執行")
     except Exception as e:
-        logging.error(f"[Cleaner] 清除 ENUM 失敗: {e}")
+        logging.error(f"[Cleaner] 清除 ENUM 失敗: {type(e).__name__} - {e}")
 
 def clean_enum_for_subkey(subkey: str):
     base_key = r"SYSTEM\\CurrentControlSet\\Enum\\USB"
@@ -90,12 +108,13 @@ def clean_enum_for_subkey(subkey: str):
             shell=True,
             check=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
+            text=True
         )
         logging.info(f"[Cleaner] [子鍵清理] 已刪除 ENUM 子鍵項目: {subkey}")
     except subprocess.CalledProcessError as e:
-        logging.error(f"[Cleaner] [子鍵清理] 刪除 {subkey} 發生錯誤: {e.stderr.decode(errors='ignore')}")
+        logging.error(f"[Cleaner] [子鍵清理] 刪除 {subkey} 發生錯誤: {e.stderr}")
     except PermissionError:
         logging.warning(f"[Cleaner] [子鍵清理] 權限不足，請使用系統管理員身分執行")
     except Exception as e:
-        logging.error(f"[Cleaner] [子鍵清理] 清除 {subkey} 失敗: {e}")
+        logging.error(f"[Cleaner] [子鍵清理] 清除 {subkey} 失敗: {type(e).__name__} - {e}")

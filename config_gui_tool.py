@@ -3,41 +3,45 @@ import json
 import os
 import logging
 
-from utils import normalize_vidpid
+from utils import normalize_vidpid, get_locked_list
 from tkinter import messagebox, ttk
 
 CONFIG_FILE = "config.json"
 WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
+DEFAULT_CONFIG = {
+    "threshold": 100,
+    "log_file": "enum_guardian_log.txt",
+    "scan_strategy": {"mode": "scheduled", "time": "12:30", "days": [], "enabled": True},
+    "monitored_devices": []
+}
+
 class ConfigGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("EnumGuardian 設定工具")
+        icon_path = "Nelson.ico"
+        if os.path.exists(icon_path):
+            try:
+                self.root.iconbitmap(icon_path)
+            except Exception as e:
+                logging.warning(f"[ConfigGUI] 載入圖示失敗: {e}")
         self.config = self.load_config()
+        self.locked_list = get_locked_list()
         self.build_widgets()
-        
+
     def load_config(self):
         if not os.path.exists(CONFIG_FILE):
-            return {
-                "threshold": 100,
-                "log_file": "enum_guardian_log.txt",
-                "scan_strategy": {"mode": "scheduled", "time": "12:30", "days": [], "enabled": True},
-                "monitored_devices": []
-            }
+            return DEFAULT_CONFIG.copy()
         try:
             with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except json.JSONDecodeError as e:
             logging.error(f"[ConfigGUI] config.json 解析失敗：{e}")
             messagebox.showerror("錯誤", "config.json 格式錯誤，請修正或刪除重新建立")
-            return {
-                "threshold": 100,
-                "log_file": "enum_guardian_log.txt",
-                "scan_strategy": {"mode": "scheduled", "time": "12:30", "days": [], "enabled": True},
-                "monitored_devices": []
-            }
+            return DEFAULT_CONFIG.copy()
 
-    def save_config(self): 
+    def save_config(self):
         with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
             json.dump(self.config, f, indent=4, ensure_ascii=False)
         logging.info("[ConfigGUI] 設定已儲存至 config.json")
@@ -77,8 +81,8 @@ class ConfigGUI:
         row += 1
         tk.Label(self.root, text="監控 VID:PID").grid(row=row, column=0, sticky='ne')
         self.vid_listbox = tk.Listbox(self.root, height=5, width=30, selectmode=tk.MULTIPLE)
-        self.refresh_vid_list()
         self.vid_listbox.grid(row=row, column=1, sticky='w')
+        self.refresh_vid_list()
 
         row += 1
         self.new_vid_var = tk.StringVar()
@@ -98,7 +102,11 @@ class ConfigGUI:
     def refresh_vid_list(self):
         self.vid_listbox.delete(0, tk.END)
         for item in self.config.get("monitored_devices", []):
-            line = f'{normalize_vidpid(item["vid_pid"])} (閾值: {item.get("notify_threshold", "?")})'
+            norm_vid = normalize_vidpid(item.get("vid_pid", ""))
+            if norm_vid in self.locked_list:
+                logging.info(f"[ConfigGUI] 裝置 {norm_vid} 已在 lock_list.json 中標示為鎖定，略過顯示。")
+                continue
+            line = f'{norm_vid} (閾值: {item.get("notify_threshold", "?")})'
             self.vid_listbox.insert(tk.END, line)
 
     def add_vid(self):
@@ -107,10 +115,15 @@ class ConfigGUI:
             messagebox.showerror("錯誤", "請輸入合法的 VID:PID")
             return
 
+        if vid in self.locked_list:
+            messagebox.showwarning("警告", f"{vid} 已在鎖定清單中，無法新增")
+            logging.warning(f"[ConfigGUI] 嘗試加入已鎖定裝置：{vid}")
+            return
+
         try:
-            threshold = int(self.notify_threshold_var.get())
+            threshold = int(self.notify_threshold_var.get().strip())
         except ValueError:
-            messagebox.showerror("錯誤", "請輸入有效的閾值數字")
+            messagebox.showerror("錯誤", "請輸入有效的閾值數字（如 30）")
             return
 
         if all(normalize_vidpid(d["vid_pid"]) != vid for d in self.config["monitored_devices"]):
@@ -138,7 +151,11 @@ class ConfigGUI:
         logging.info(f"[ConfigGUI] 刪除裝置：{selected}")
 
     def save(self):
-        self.config["threshold"] = int(self.threshold_var.get())
+        try:
+            self.config["threshold"] = int(self.threshold_var.get())
+        except ValueError:
+            messagebox.showerror("錯誤", "請輸入有效的整數門檻")
+            return
         self.config["log_file"] = self.log_file_var.get()
         self.config["scan_strategy"] = {
             "enabled": self.enabled_var.get(),
