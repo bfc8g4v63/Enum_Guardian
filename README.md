@@ -1,4 +1,4 @@
-# EnumGuardian
+# Enum_Guardian 
 
 ## 功能簡介
 
@@ -8,6 +8,13 @@
 * 提供 GUI 與 CLI 兩種模式操作  
 * 支援批次解除鎖定與重新安裝驅動  
 * 可匯出設備清單報表（Vendor、Product、Driver、COM 編號）  
+
+---
+
+### 使用說明
+1. 開啟 **config_gui_tool.exe** 進行設定  
+2. 開啟 **工作排程器** 匯入 `Enum_GuardianAuto_Factory_exe.xml`  
+3. 確保 **時間對齊**（系統時間需與伺服器同步）
 
 ---
 
